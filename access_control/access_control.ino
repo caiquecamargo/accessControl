@@ -5,8 +5,9 @@
 #define SS_PIN 10
 #define RST_PIN 9
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
- 
-char st[20];
+
+static int lenUID = 40;
+String validUID[lenUID];
  
 void setup() 
 {
@@ -15,6 +16,18 @@ void setup()
   mfrc522.PCD_Init();   // Inicia MFRC522
   Serial.println("Aproxime o seu cartao do leitor...");
   Serial.println();
+}
+
+void createValidUIDTable(){
+  validUID[0] = "79 3A DB A2";
+}
+
+void isValidUID( uid ){
+  for (int i = 0; i < lenUID; i++){
+     if (validUID[i] == lenUID) return 1;
+  }
+
+  return 0;
 }
  
 void loop() 
