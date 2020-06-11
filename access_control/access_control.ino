@@ -5,12 +5,21 @@
 #define RST_PIN 9
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 
-#define LEN_UID 2
+#define LEN_UID 9
 String validUID[] = {
-    " 79 3A DB A2", " 79 3A DB A3"
+    " 79 3A DB A2", 
+    " 17 E6 58 0F", //CAIQUE
+    " 87 5E EF 32", //BOMBÃO
+    " 3D 01 49 9C", //EDUARDO
+    " 5B 5C 64 39", //GG
+    " 33 F1 EB DF", //SERGIÂO
+    " 62 0D D7 D3", //THIAGO
+    " 6B 42 76 39", //VELHO
+    " A3 A6 50 DF" //DANIELZINHO
   };
 
 #define PORT_TRIGGER 9
+#define LED 8
  
 void setup() 
 {
@@ -19,7 +28,12 @@ void setup()
   mfrc522.PCD_Init();   // Inicia MFRC522
 
   pinMode( PORT_TRIGGER, OUTPUT );
+  pinMode( LED, OUTPUT );
   digitalWrite( PORT_TRIGGER, LOW );
+
+  digitalWrite( LED, HIGH );
+  delay( 300 );
+  digitalWrite( LED, LOW );
   
   Serial.println( "Aproxime o seu cartao do leitor..." );
   Serial.println();
@@ -32,13 +46,26 @@ int isValidUID( String uid ){
   return 0;
 }
 
+void notValidUID(){
+  for( int i = 0; i < 2; i++ ){
+    digitalWrite( LED, HIGH );
+    delay ( 300 );
+    digitalWrite( LED, LOW );
+    delay ( 300 );
+  }
+  
+}
+
 void openTheDoor(){
   Serial.println( "Porta Aberta" );
   digitalWrite( PORT_TRIGGER, HIGH );
+  digitalWrite( LED, HIGH );
+  delay( 1000 );
 }
 
 void closeTheDoor(){
   digitalWrite( PORT_TRIGGER, LOW );
+  digitalWrite( LED, LOW );
 }
 
 String readUID(){
@@ -64,6 +91,6 @@ void loop()
   String uid  = readUID();
   Serial.println( uid );
   if ( isValidUID( uid ) ) openTheDoor();
-  delay(1000);
+  else notValidUID();
   closeTheDoor();
 } 
