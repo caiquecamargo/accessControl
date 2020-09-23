@@ -10,7 +10,7 @@
 #define CLOSE LOW
 
 #define redLed 8
-#define door 9
+#define door 7
 
 byte storedCard[4];
 byte readCard[4];
