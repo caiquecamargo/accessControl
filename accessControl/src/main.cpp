@@ -6,6 +6,8 @@
 #define LED_ON HIGH
 #define LED_OFF LOW
 
+#define MAX_REGISTER 64
+
 #define OPEN HIGH
 #define CLOSE LOW
 
@@ -102,7 +104,7 @@ void accessGranted()
   digitalWrite(redLed, LED_ON);
   delay(1000);
   digitalWrite(door, CLOSE);
-  digitalWrite(redLed, LED_ON);
+  digitalWrite(redLed, LED_OFF);
 }
 
 void accessDenied()
@@ -142,6 +144,13 @@ uint8_t successRead()
 bool isMaster(byte id[])
 {
   return compareTwoIDs(id, masterCard);
+}
+
+bool hasPossiblesToWrite()
+{
+  if (EEPROM.read(0) < MAX_REGISTER)
+    return true;
+  return false;
 }
 
 void readID(uint8_t position)
@@ -205,16 +214,25 @@ void writeID(byte id[])
 {
   //STORAGE A CARD ID
   Serial.println(">>>>>> Modo de gravação.");
-  uint8_t numberOfEntries = EEPROM.read(0);
-  uint8_t start = (numberOfEntries * 4) + 2;
 
-  numberOfEntries++;
-  EEPROM.write(0, numberOfEntries);
+  if (hasPossiblesToWrite())
+  {
+    uint8_t numberOfEntries = EEPROM.read(0);
+    uint8_t start = (numberOfEntries * 4) + 2;
 
-  for (uint8_t i = 0; i < 4; i++)
-    EEPROM.write(start + i, id[i]);
+    numberOfEntries++;
+    EEPROM.write(0, numberOfEntries);
 
-  successWrite();
+    for (uint8_t i = 0; i < 4; i++)
+      EEPROM.write(start + i, id[i]);
+
+    successWrite();
+  }
+  else
+  {
+    Serial.println(">>>>>> Erro ao gravar cadastro. memória cheia.");
+    flashLed(200, 3, redLed);
+  }
 }
 
 void deleteID(byte id[])
@@ -266,7 +284,6 @@ void accessProgramMode()
     {
       waitingForACard = false;
       (!findID(readCard)) ? writeID(readCard) : deleteID(readCard);
-      printStore();
     }
 
     delay(200);
@@ -290,7 +307,8 @@ void setup()
   Serial.println("INIT");
 
   //TO HARD_RESET ENABLE THIS LINE
-  EEPROM.write(1, 0);
+  // EEPROM.write(1, 0);
+  // EEPROM.write(0, 44);
 
   //IF DON'T HAVE A MASTERCARD CADASTRED
   if (EEPROM.read(1) != 143)
